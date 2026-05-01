@@ -371,7 +371,7 @@ export default function SignInPage() {
                 <p style={{ textAlign: "center", fontFamily: '"Inter", sans-serif',
                   fontSize: "13px", color: "#94A3B8", marginTop: "16px" }}>
                   Already part of our archive?{" "}
-                  <a href="#" style={{ color: "#00236F", fontWeight: 600, textDecoration: "none" }}>
+                  <a href="/login" style={{ color: "#00236F", fontWeight: 600, textDecoration: "none" }}>
                     Login
                   </a>
                 </p>

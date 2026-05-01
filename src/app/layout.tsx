@@ -8,11 +8,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en"> {/* Changed to English since we are building in English now */}
+    <html lang="en"> 
     <body className="bg-[#FCF9F1] text-[#00236F] antialiased min-h-screen flex flex-col">
-        {/* Navbar is fixed, so it sits on top of everything */}
         <Navbar />
-        {/* Main content: removed the extra flex-col div to avoid height conflicts */}
         <main className="flex-grow">
           {children}
         </main>

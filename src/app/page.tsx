@@ -80,10 +80,10 @@ export default function LandingPage() {
             
             {/* SIGN IN BUTTON */}
             <Link
-              href="/signin"
+              href="/signup"
               className="min-w-[170px] px-10 py-4 rounded-2xl font-sans text-xs font-bold text-[#00236F] bg-[#FCF9F1] shadow-2xl hover:scale-105 transition-all tracking-widest uppercase"
             >
-              Sign In
+              Sign Up
             </Link>
           </div>
         </div>
