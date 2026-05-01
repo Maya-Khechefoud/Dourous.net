@@ -1,26 +1,28 @@
 @import "tailwindcss";
 
+@theme {
+  /*  Palette Dourous-Net  */
+  --color-brand-blue: #00236F;    /* Le bleu profond du logo */
+  --color-brand-cream: #FCF9F1;   /* Le fond sable/ivoire */
+  --color-brand-white: #FFFFFF;   /* Le blanc pur des cartes */
+  
+  /* Couleurs secondaires pour le texte et les bordures */
+  --color-muted-slate: #94A3B8;   /* Gris pour les sous-titres */
+  --color-muted-lavender: #C5C5D3; /* Gris clair pour les lignes */
+  --color-accent-tan: #E5E1D3;    /* La couleur des inputs/profil */
+
+  /* Polices (Optionnel mais recommandé pour ton design) */
+  --font-serif: "Cardo", "Playfair Display", serif;
+  --font-sans: "Inter", "Plus Jakarta Sans", sans-serif;
+}
+
+/* Styles de base  */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  background-color: var(--color-brand-cream);
+  color: var(--color-brand-blue);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  @apply antialiased;
+  background-color: var(--color-brand-cream);
 }
