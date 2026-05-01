@@ -1,8 +1,33 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase"; // Corrected path based on your lib/supabase file
 
 export default function LoginPage() {
+  const router = useRouter();
+  const supabase = createClient();
+  
+  // State for inputs
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      alert(error.message);
+      setLoading(false);
+    } else {
+      router.push("/dashboard");
+    }
+  };
+
   const labelStyle: React.CSSProperties = {
     display: "block",
     fontFamily: '"Inter", "Plus Jakarta Sans", sans-serif',
@@ -84,7 +109,7 @@ export default function LoginPage() {
             boxShadow: "0 8px 60px rgba(0, 35, 111, 0.10), 0 2px 12px rgba(0,0,0,0.06)",
           }}
         >
-          {/* LEFT PANEL (Preserved) */}
+          {/* LEFT PANEL */}
           <div
             className="relative flex flex-col justify-between"
             style={{
@@ -148,7 +173,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* RIGHT PANEL (Updated for Login) */}
+          {/* RIGHT PANEL */}
           <div
             className="flex flex-col justify-center"
             style={{
@@ -192,11 +217,17 @@ export default function LoginPage() {
                       <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
                     </svg>
                   </span>
-                  <input type="email" placeholder="researcher@university.edu" style={inputStyle} />
+                  <input 
+                    type="email" 
+                    placeholder="researcher@university.edu" 
+                    style={inputStyle} 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
                 </div>
               </div>
 
-              {/* Password with Forgot Password */}
+              {/* Password */}
               <div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
                   <label style={labelStyle}>Password</label>
@@ -211,8 +242,13 @@ export default function LoginPage() {
                       <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                     </svg>
                   </span>
-                  <input type="password" placeholder="••••••••••"
-                    style={{ ...inputStyle, fontSize: "15px", letterSpacing: "0.08em" }} />
+                  <input 
+                    type="password" 
+                    placeholder="••••••••••"
+                    style={{ ...inputStyle, fontSize: "15px", letterSpacing: "0.08em" }} 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
                 </div>
               </div>
 
@@ -220,24 +256,30 @@ export default function LoginPage() {
               <div style={{ paddingTop: "4px" }}>
                 <button
                   type="button"
+                  disabled={loading}
+                  onClick={handleLogin}
                   style={{
-                    width: "100%", height: "46px", backgroundColor: "#00236F", color: "#FFFFFF",
+                    width: "100%", height: "46px", backgroundColor: loading ? "#94A3B8" : "#00236F", color: "#FFFFFF",
                     border: "none", borderRadius: "9px",
                     fontFamily: '"Inter", "Plus Jakarta Sans", sans-serif',
                     fontSize: "14px", fontWeight: 600, letterSpacing: "0.04em",
-                    cursor: "pointer", boxShadow: "0 4px 20px rgba(0,35,111,0.28)",
+                    cursor: loading ? "not-allowed" : "pointer", boxShadow: "0 4px 20px rgba(0,35,111,0.28)",
                     transition: "all 0.15s ease",
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "#001a5c";
-                    e.currentTarget.style.boxShadow = "0 6px 28px rgba(0,35,111,0.40)";
+                    if(!loading) {
+                      e.currentTarget.style.backgroundColor = "#001a5c";
+                      e.currentTarget.style.boxShadow = "0 6px 28px rgba(0,35,111,0.40)";
+                    }
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "#00236F";
-                    e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,35,111,0.28)";
+                    if(!loading) {
+                      e.currentTarget.style.backgroundColor = "#00236F";
+                      e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,35,111,0.28)";
+                    }
                   }}
                 >
-                  Login &nbsp;→
+                  {loading ? "Verifying..." : "Login \u00A0\u2192"}
                 </button>
 
                 <p style={{ textAlign: "center", fontFamily: '"Inter", sans-serif',
