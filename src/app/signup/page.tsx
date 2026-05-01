@@ -1,10 +1,35 @@
 "use client";
 
 import { useState } from "react";
+import { signUpWithEmail } from "@/lib/auth"; // Ensure this path is correct
+import { useRouter } from "next/navigation";
 
 export default function SignInPage() {
-  const [selectedRole, setSelectedRole] = useState<"student" | "professor">("student");
+  const [selectedRole, setSelectedRole] = useState<"Student" | "Professor">("Student");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
+  const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    const fullName = formData.get("fullname") as string;
+
+    const { data, error } = await signUpWithEmail(email, password, fullName, selectedRole);
+
+    if (error) {
+      alert(error.message);
+      setLoading(false);
+    } else {
+      alert("Account created! Check your email to verify your account.");
+      router.push("/login"); // Redirect to login after success
+    }
+  };
+
+  // --- Styles remain the same ---
   const labelStyle: React.CSSProperties = {
     display: "block",
     fontFamily: '"Inter", "Plus Jakarta Sans", sans-serif',
@@ -100,7 +125,6 @@ export default function SignInPage() {
               overflow: "hidden",
             }}
           >
-            {/* Background scholarly image with blur and overlay */}
             <div
               style={{
                 position: "absolute",
@@ -114,9 +138,7 @@ export default function SignInPage() {
               }}
             />
 
-            {/* Content above bg */}
             <div style={{ position: "relative", zIndex: 1 }}>
-              {/* Back link */}
               <a
                 href="/"
                 style={{
@@ -132,8 +154,6 @@ export default function SignInPage() {
                   marginBottom: "20px",
                   transition: "color 0.15s ease",
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.90)")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.50)")}
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                   strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -142,7 +162,6 @@ export default function SignInPage() {
                 Back to Home
               </a>
 
-              {/* Brand heading */}
               <div>
                 <h1
                   style={{
@@ -156,7 +175,6 @@ export default function SignInPage() {
                 >
                   Dourous-Net
                 </h1>
-                {/* Decorative underline */}
                 <div
                   style={{
                     width: "36px",
@@ -168,7 +186,6 @@ export default function SignInPage() {
               </div>
             </div>
 
-            {/* Center copy */}
             <div style={{ position: "relative", zIndex: 1, padding: "24px 0 12px" }}>
               <h2
                 style={{
@@ -197,7 +214,6 @@ export default function SignInPage() {
               </p>
             </div>
 
-            {/* Bottom footer text */}
             <div style={{ position: "relative", zIndex: 1 }}>
               <p
                 style={{
@@ -223,7 +239,6 @@ export default function SignInPage() {
               overflowY: "auto",
             }}
           >
-            {/* Heading */}
             <h2
               style={{
                 fontFamily: '"Cardo", "Playfair Display", serif',
@@ -247,8 +262,8 @@ export default function SignInPage() {
               Enter your institutional details to get started.
             </p>
 
-            {/* ── shared styles as constants to keep JSX readable ── */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+            {/* FORM WRAPPER ADDED HERE */}
+            <form onSubmit={handleSignup} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
 
               {/* Full Name */}
               <div>
@@ -260,7 +275,8 @@ export default function SignInPage() {
                       <circle cx="12" cy="7" r="4"/>
                     </svg>
                   </span>
-                  <input type="text" placeholder="Professor Jane Doe" style={inputStyle} />
+                  {/* Added Name Attribute */}
+                  <input name="fullname" type="text" placeholder="Professor Jane Doe" required style={inputStyle} />
                 </div>
               </div>
 
@@ -274,7 +290,8 @@ export default function SignInPage() {
                       <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
                     </svg>
                   </span>
-                  <input type="email" placeholder="j.doe@university.edu" style={inputStyle} />
+                  {/* Added Name Attribute */}
+                  <input name="email" type="email" placeholder="j.doe@university.edu" required style={inputStyle} />
                 </div>
               </div>
 
@@ -282,49 +299,47 @@ export default function SignInPage() {
               <div>
                 <label style={labelStyle}>Designated Role</label>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-                  {/* Student */}
                   <button
                     type="button"
-                    onClick={() => setSelectedRole("student")}
+                    onClick={() => setSelectedRole("Student")}
                     style={{
                       display: "flex", flexDirection: "column", alignItems: "center",
                       justifyContent: "center", gap: "6px", padding: "12px",
-                      backgroundColor: selectedRole === "student" ? "#EEF1FA" : "#F5F2EA",
-                      border: selectedRole === "student" ? "1.5px solid #00236F" : "1.5px solid #E5E1D3",
+                      backgroundColor: selectedRole === "Student" ? "#EEF1FA" : "#F5F2EA",
+                      border: selectedRole === "Student" ? "1.5px solid #00236F" : "1.5px solid #E5E1D3",
                       borderRadius: "8px", cursor: "pointer", transition: "all 0.15s ease",
                     }}
                   >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                      stroke={selectedRole === "student" ? "#00236F" : "#94A3B8"}
+                      stroke={selectedRole === "Student" ? "#00236F" : "#94A3B8"}
                       strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
                       <path d="M6 12v5c3 3 9 3 12 0v-5"/>
                     </svg>
                     <span style={{ fontFamily: '"Inter", sans-serif', fontSize: "12.5px", fontWeight: 500,
-                      color: selectedRole === "student" ? "#00236F" : "#94A3B8" }}>Student</span>
+                      color: selectedRole === "Student" ? "#00236F" : "#94A3B8" }}>Student</span>
                   </button>
 
-                  {/* Professor */}
                   <button
                     type="button"
-                    onClick={() => setSelectedRole("professor")}
+                    onClick={() => setSelectedRole("Professor")}
                     style={{
                       display: "flex", flexDirection: "column", alignItems: "center",
                       justifyContent: "center", gap: "6px", padding: "12px",
-                      backgroundColor: selectedRole === "professor" ? "#EEF1FA" : "#F5F2EA",
-                      border: selectedRole === "professor" ? "1.5px solid #00236F" : "1.5px solid #E5E1D3",
+                      backgroundColor: selectedRole === "Professor" ? "#EEF1FA" : "#F5F2EA",
+                      border: selectedRole === "Professor" ? "1.5px solid #00236F" : "1.5px solid #E5E1D3",
                       borderRadius: "8px", cursor: "pointer", transition: "all 0.15s ease",
                     }}
                   >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                      stroke={selectedRole === "professor" ? "#00236F" : "#94A3B8"}
+                      stroke={selectedRole === "Professor" ? "#00236F" : "#94A3B8"}
                       strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                       <circle cx="12" cy="8" r="4"/>
                       <path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
                       <path d="M9 11l1 1 4-4"/>
                     </svg>
                     <span style={{ fontFamily: '"Inter", sans-serif', fontSize: "12.5px", fontWeight: 500,
-                      color: selectedRole === "professor" ? "#00236F" : "#94A3B8" }}>Professor</span>
+                      color: selectedRole === "Professor" ? "#00236F" : "#94A3B8" }}>Professor</span>
                   </button>
                 </div>
               </div>
@@ -339,7 +354,8 @@ export default function SignInPage() {
                       <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                     </svg>
                   </span>
-                  <input type="password" placeholder="••••••••••"
+                  {/* Added Name Attribute */}
+                  <input name="password" type="password" placeholder="••••••••••" required
                     style={{ ...inputStyle, fontSize: "15px", letterSpacing: "0.08em" }} />
                 </div>
               </div>
@@ -347,25 +363,20 @@ export default function SignInPage() {
               {/* CTA */}
               <div style={{ paddingTop: "4px" }}>
                 <button
-                  type="button"
+                  type="submit" // Changed to submit
+                  disabled={loading}
                   style={{
                     width: "100%", height: "46px", backgroundColor: "#00236F", color: "#FFFFFF",
                     border: "none", borderRadius: "9px",
                     fontFamily: '"Inter", "Plus Jakarta Sans", sans-serif',
                     fontSize: "14px", fontWeight: 600, letterSpacing: "0.04em",
-                    cursor: "pointer", boxShadow: "0 4px 20px rgba(0,35,111,0.28)",
+                    cursor: loading ? "not-allowed" : "pointer", 
+                    opacity: loading ? 0.7 : 1,
+                    boxShadow: "0 4px 20px rgba(0,35,111,0.28)",
                     transition: "background-color 0.15s ease, box-shadow 0.15s ease",
                   }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#001a5c";
-                    (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 6px 28px rgba(0,35,111,0.40)";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#00236F";
-                    (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 20px rgba(0,35,111,0.28)";
-                  }}
                 >
-                  Create Account &nbsp;→
+                  {loading ? "Creating..." : "Create Account \u00A0\u2192"}
                 </button>
 
                 <p style={{ textAlign: "center", fontFamily: '"Inter", sans-serif',
@@ -376,8 +387,7 @@ export default function SignInPage() {
                   </a>
                 </p>
               </div>
-
-            </div>
+            </form>
           </div>
         </div>
       </div>
