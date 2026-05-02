@@ -1,8 +1,43 @@
-import React from 'react';
+"use client";
+
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { createClient } from "@/lib/supabase"; // Ensure this matches your project structure
 
 export default function LandingPage() {
+  const router = useRouter();
+  const supabase = createClient();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkUser = async () => {
+      // Check if a session exists in local storage
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        // Redirect to dashboard if already authenticated
+        router.push('/dashboard');
+      } else {
+        // Only show landing page if no session is found
+        setLoading(false);
+      }
+    };
+    checkUser();
+  }, [router, supabase.auth]);
+
+  // Prevent "flash" of content while checking authentication status
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#000d1a] flex items-center justify-center">
+        <div className="text-white/50 font-serif italic tracking-widest animate-pulse">
+          Entering Scriptorium...
+        </div>
+      </div>
+    );
+  }
+
   return (
     <main className="min-h-screen flex flex-col bg-[#FCF9F1]">
       {/* ── HERO SECTION ── */}
@@ -44,9 +79,7 @@ export default function LandingPage() {
             />
           </div>
 
-          {/* THE 40% BLUE FOUNDATION 
-              Starts at 60% depth to keep the top of the library clear.
-          */}
+          {/* THE 40% BLUE FOUNDATION */}
           <div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_0%,transparent_60%,rgba(16,37,100,0.6)_75%,rgba(9,22,74,0.95)_100%)]" />
           
           {/* Global soft vignette for cinematic depth */}
@@ -62,7 +95,6 @@ export default function LandingPage() {
             Dourous-Net
           </h1>
 
-          {/* REFINED DESCRIPTION: High Legibility (Sans-serif, normal case, wide tracking) */}
           <p className="font-sans text-sm md:text-base text-white/90 leading-relaxed max-w-xl tracking-widest font-light drop-shadow-md">
             A digital scriptorium dedicated to the meticulous preservation 
             of intellectual heritage and the pursuit of academic 
@@ -91,7 +123,6 @@ export default function LandingPage() {
 
       {/* ── QUOTE SECTION ── */}
       <section className="bg-[#FCF9F1] flex flex-col items-center justify-center text-center px-6 py-32 gap-8 border-t border-[#00236F]/5">
-        {/* Quote Mark */}
         <span className="font-serif text-9xl text-[#00236F]/10 leading-none select-none">
           &#x201D;
         </span>

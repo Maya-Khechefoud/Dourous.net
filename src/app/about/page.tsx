@@ -1,7 +1,9 @@
 // app/about/page.tsx
-// BODY ONLY — navbar and footer are handled separately
+// FIXED: Images now render at natural quality — no cropping or stretching.
+// Hero banner uses natural aspect ratio; side panels scroll naturally.
 // Place bib.jpg → /public/bib.jpg
-// Place estin students image → /public/img/about/students.jpg (or any illustration)
+// Place Bibestin.jpg → /public/Bibestin.jpg
+// Place students.jpg → /public/img/about/students.jpg
 
 import Image from "next/image";
 import Link from "next/link";
@@ -52,20 +54,31 @@ export default function AboutPage() {
           }}
         />
 
-        {/* Full-bleed library banner */}
-        <div className="w-full relative overflow-hidden" style={{ height: "clamp(200px, 28vw, 310px)" }}>
+        {/* 
+          FIXED HERO IMAGE:
+          - Use responsive Image with width/height matching natural photo dims
+          - style="width:100%; height:auto" preserves aspect ratio fully
+          - No fill, no object-cover — image renders at true proportions
+        */}
+        <div className="w-full relative overflow-hidden">
           <Image
-            src="/"
-            alt="Library — Long Room"
-            fill
-            className="object-cover object-center"
+            src="/Bibestin.jpg"
+            alt="ESTIN Library Building"
+            width={1280}
+            height={720}
+            style={{
+              width: "100%",
+              height: "auto",
+              display: "block",
+            }}
             priority
           />
-          {/* soft vignette */}
+          {/* soft vignette overlay */}
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(to bottom, rgba(0,0,0,0.06) 0%, rgba(0,0,0,0.18) 100%)",
+              background: "linear-gradient(to bottom, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0.15) 100%)",
+              pointerEvents: "none",
             }}
           />
         </div>
@@ -73,10 +86,10 @@ export default function AboutPage() {
 
       {/* ════════════════════════════════════════════════════════════════
           SECTION 2 — MISSION
-          White bg · Text left (48%) · Dark image right (52%)
+          White bg · Text left (48%) · Natural image right (52%)
       ════════════════════════════════════════════════════════════════ */}
       <section
-        className="flex"
+        className="flex flex-col md:flex-row"
         style={{ backgroundColor: "#FFFFFF", borderTop: "1px solid #E5E1D3" }}
       >
         {/* ── Left: text ── */}
@@ -122,7 +135,7 @@ export default function AboutPage() {
             Dourous.net stands as a bridge between technology and education.
           </p>
 
-          {/* CTA — solid navy, square corners */}
+          {/* CTA */}
           <div>
             <Link
               href="/estin.png"
@@ -139,26 +152,34 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* ── Right: dark photo panel ── */}
+        {/* ── Right: natural photo panel ──
+            FIXED: Image is NOT stretched into a fixed-height container.
+            It displays at its natural aspect ratio, and the section grows to match.
+            backgroundColor acts as a fallback while loading.
+        */}
         <div
-          className="relative"
-          style={{ flex: "0 0 52%", minHeight: "480px", backgroundColor: "#111827" }}
+          style={{ flex: "0 0 52%", backgroundColor: "#111827" }}
         >
           <Image
-            src="/img/about/notebook.jpg"
+            src="/bib.jpg"
             alt="Notebook on desk"
-            fill
-            className="object-cover"
+            width={900}
+            height={600}
+            style={{
+              width: "100%",
+              height: "auto",
+              display: "block",
+            }}
           />
         </div>
       </section>
 
       {/* ════════════════════════════════════════════════════════════════
           SECTION 3 — DEDICATION
-          Cream bg · Text left (48%) · Illustration right (52%)
+          Cream bg · Text left (48%) · Natural image right (52%)
       ════════════════════════════════════════════════════════════════ */}
       <section
-        className="flex"
+        className="flex flex-col md:flex-row"
         style={{ backgroundColor: "#FCF9F1", borderTop: "1px solid #E5E1D3" }}
       >
         {/* ── Left: text ── */}
@@ -191,7 +212,7 @@ export default function AboutPage() {
             teachers to receive, review, and manage coursework in one centralised interface.
           </p>
 
-          {/* Three pillars — left-border treatment */}
+          {/* Three pillars */}
           <div className="flex items-stretch">
             {[
               { title: "Accessibility", sub: "Educational Reach",   active: true  },
@@ -227,16 +248,22 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* ── Right: students illustration ── */}
+        {/* ── Right: students photo ──
+            FIXED: Same approach — natural width/height, no forced container crop.
+        */}
         <div
-          className="relative"
-          style={{ flex: "0 0 52%", minHeight: "480px", backgroundColor: "#E8EDF5" }}
+          style={{ flex: "0 0 52%", backgroundColor: "#E8EDF5" }}
         >
           <Image
-            src="/img/about/students.jpg"
+            src="/std.jpg"
             alt="Students collaborating"
-            fill
-            className="object-cover object-top"
+            width={900}
+            height={600}
+            style={{
+              width: "100%",
+              height: "auto",
+              display: "block",
+            }}
           />
         </div>
       </section>

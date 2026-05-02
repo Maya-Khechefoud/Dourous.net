@@ -2,26 +2,63 @@
 
 import React, { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function DashboardBody() {
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
+  const router = useRouter();
 
-  useEffect(() => {
-    const fetchStudentData = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data } = await supabase
-          .from('interactions')
-          .select('*')
-          .eq('student_id', user.id);
+  const fetchStudentData = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data, error } = await supabase
+        .from('interactions')
+        .select(`
+          *,
+          resources (
+            module_title
+          )
+        `)
+        .eq('student_id', user.id)
+        .order('submission_date', { ascending: false });
+      
+      if (error) {
+        console.error("Supabase Error:", error);
+      } else {
         setSubmissions(data || []);
       }
-      setLoading(false);
-    };
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
     fetchStudentData();
   }, [supabase]);
+
+  // Handle Deletion
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to remove this record from the archive?")) return;
+
+    const { error } = await supabase
+      .from('interactions')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      alert("Error deleting: " + error.message);
+    } else {
+      // Update UI locally so the card disappears immediately
+      setSubmissions(prev => prev.filter(sub => sub.id !== id));
+    }
+  };
+
+  // Handle Edit Redirection
+  const handleEdit = (id: string) => {
+    router.push(`/dashboard/submissions?edit=${id}`);
+  };
 
   return (
     <div className="min-h-screen bg-[#F5F0E8] p-8">
@@ -45,34 +82,53 @@ export default function DashboardBody() {
 
       {/* 2. MAIN CONTENT GRID */}
       <div className="grid grid-cols-12 gap-10">
-        
-        {/* LEFT COLUMN: ENROLLED CURRICULA (8/12) */}
         <div className="col-span-8">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-2xl font-bold text-[#00236F] font-serif flex items-center gap-3">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-              Enrolled Curricula
+              Recent Submissions
             </h2>
-            <button className="text-xs font-bold text-slate-400 uppercase tracking-widest hover:text-[#00236F]">View All →</button>
           </div>
 
-          {/* 2x2 COURSE GRID */}
           <div className="grid grid-cols-2 gap-6">
-            <CourseCard title="Ethics in the Digital Age" category="PHILOSOPHY" progress={72} desc="Exploring moral frameworks of artificial intelligence..." />
-            <CourseCard title="The Silk Road Chronicles" category="HISTORY" progress={45} desc="An intensive study of transcontinental trade and culture..." />
-            <CourseCard title="Modernist Poetry & Prose" category="LITERATURE" progress={18} desc="Analyzing the fragmentation of form in the early 20th century..." />
+            {loading ? (
+              <p className="col-span-2 text-slate-400 italic font-serif">Consulting the archives...</p>
+            ) : submissions.length > 0 ? (
+              submissions.map((sub) => (
+                <CourseCard 
+                  key={sub.id}
+                  id={sub.id}
+                  title={sub.resources?.module_title || "Untitled Module"} 
+                  category={sub.status?.toUpperCase() || "PENDING"} 
+                  teacher={sub.selected_teacher}
+                  date={new Date(sub.submission_date).toLocaleDateString()}
+                  desc={sub.student_notes || "No additional methodology notes provided."} 
+                  fileUrl={sub.file_url}
+                  onDelete={handleDelete}
+                  onEdit={handleEdit}
+                />
+              ))
+            ) : (
+              <div className="col-span-2 py-12 border-2 border-dashed border-slate-300 rounded-2xl flex flex-col items-center justify-center">
+                <p className="text-slate-400 font-bold text-xs uppercase tracking-tighter">No submissions found</p>
+              </div>
+            )}
             
-            {/* Dashed Placeholder */}
-            <div className="border-2 border-dashed border-slate-300 rounded-2xl flex flex-col items-center justify-center p-8 hover:bg-white/50 transition-colors cursor-pointer">
-              <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center text-slate-400 mb-2">+</div>
-              <p className="text-slate-400 font-bold text-xs uppercase tracking-tighter">Enroll in new course</p>
-            </div>
+            <Link href="/dashboard/submissions" className="block group">
+              <div className="h-full border-2 border-dashed border-slate-300 rounded-2xl flex flex-col items-center justify-center p-8 hover:bg-white hover:border-[#00236F] hover:shadow-md transition-all cursor-pointer">
+                <div className="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center text-slate-400 mb-2 group-hover:border-[#00236F] group-hover:text-[#00236F] transition-colors text-xl font-light">
+                  +
+                </div>
+                <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest group-hover:text-[#00236F] transition-colors">
+                  New Submission
+                </p>
+              </div>
+            </Link>
           </div>
         </div>
 
-        {/* RIGHT COLUMN: SIDEBAR (4/12) */}
+        {/* RIGHT COLUMN: SIDEBAR */}
         <div className="col-span-4 space-y-8">
-          {/* Scholarly Standing Card */}
           <div className="bg-[#00236F] rounded-2xl p-8 text-white shadow-xl">
             <p className="text-sm font-serif opacity-80 mb-6">Scholarly Standing</p>
             <div className="text-center mb-8">
@@ -80,27 +136,10 @@ export default function DashboardBody() {
               <p className="text-[10px] tracking-[0.2em] font-bold opacity-60 uppercase">Current Distinction</p>
             </div>
             <div className="space-y-4 border-t border-white/10 pt-6 text-[11px]">
-              <StatRow label="Credit Hours" value="18 / 120" />
+              <StatRow label="Submissions" value={`${submissions.length}`} />
               <StatRow label="Attendance Rate" value="98.5%" />
               <StatRow label="Scholarly Rank" value="Top 5%" />
             </div>
-          </div>
-
-          {/* Quote Card */}
-          <div className="bg-white/60 border border-white rounded-2xl p-8 shadow-sm">
-             <span className="text-3xl text-[#00236F] font-serif opacity-30">“</span>
-             <p className="text-[#00236F] italic font-serif leading-relaxed mb-6">
-               "The pursuit of knowledge is not a sprint towards a destination, but a patient walk through a garden of infinite horizons."
-             </p>
-             <div className="flex items-center gap-4">
-               <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden border border-white shadow-sm">
-                 <img src="https://i.pravatar.cc/100?u=dean" alt="Dr. Al-Farsi" />
-               </div>
-               <div>
-                 <p className="text-[10px] font-bold text-[#00236F] uppercase">Dr. Al-Farsi</p>
-                 <p className="text-[9px] text-slate-500 uppercase tracking-tighter">Dean of Humanities</p>
-               </div>
-             </div>
           </div>
         </div>
       </div>
@@ -108,21 +147,47 @@ export default function DashboardBody() {
   );
 }
 
-// SUB-COMPONENTS
-function CourseCard({ title, category, progress, desc }: any) {
+function CourseCard({ id, title, category, teacher, date, desc, fileUrl, onDelete, onEdit }: any) {
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
-      <span className="inline-block px-2 py-1 bg-red-50 text-[9px] font-bold text-red-700 rounded mb-4 tracking-widest">{category}</span>
-      <h4 className="text-[#00236F] font-bold text-lg mb-2">{title}</h4>
-      <p className="text-slate-400 text-xs leading-relaxed mb-6">{desc}</p>
-      <div className="space-y-2">
-        <div className="flex justify-between text-[10px] font-bold">
-          <span className="text-slate-400">Progress</span>
-          <span className="text-[#00236F]">{progress}%</span>
+    <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow flex flex-col justify-between">
+      <div>
+        <div className="flex justify-between items-start mb-4">
+          <span className="inline-block px-2 py-1 bg-blue-50 text-[9px] font-bold text-blue-700 rounded tracking-widest">{category}</span>
+          <div className="flex gap-2">
+            {/* Edit Button */}
+            <button 
+              onClick={() => onEdit(id)}
+              className="p-1.5 text-slate-400 hover:text-blue-600 transition-colors"
+              title="Edit"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+            </button>
+            {/* Delete Button */}
+            <button 
+              onClick={() => onDelete(id)}
+              className="p-1.5 text-slate-400 hover:text-red-600 transition-colors"
+              title="Delete"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+            </button>
+          </div>
         </div>
-        <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-          <div className="h-full bg-[#00236F] transition-all duration-500" style={{ width: `${progress}%` }} />
-        </div>
+        <h4 className="text-[#00236F] font-bold text-lg mb-1">{title}</h4>
+        <p className="text-[10px] text-slate-500 font-bold uppercase mb-3 italic">To: {teacher}</p>
+        <p className="text-slate-400 text-xs leading-relaxed mb-6 line-clamp-2">{desc}</p>
+      </div>
+      
+      <div className="pt-4 border-t border-slate-50 flex justify-between items-center">
+        <span className="text-[9px] text-slate-300 font-bold uppercase">{date}</span>
+        <a 
+          href={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${fileUrl}`}
+          target="_blank"
+          rel="noreferrer"
+          className="text-[#00236F] text-[10px] font-bold uppercase tracking-widest hover:underline flex items-center gap-2"
+        >
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Review
+        </a>
       </div>
     </div>
   );
